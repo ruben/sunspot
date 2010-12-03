@@ -16,7 +16,7 @@ describe 'function query' do
         boost(function { 10.5 })
       end
     end
-    connection.should have_last_search_including(:bf, '10.5')
+    connection.should have_last_search_boosted('10.5', 'pizza')
   end
 
   it "should handle boost function with time literal" do
