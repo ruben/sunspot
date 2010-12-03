@@ -7,7 +7,7 @@ describe 'function query' do
         boost(function { :average_rating })
       end
     end
-    connection.should have_last_search_including(:bf, 'average_rating_ft')
+    connection.should have_last_search_boosted('average_rating_ft', 'pizza')
   end
 
   it "should handle boost function with constant float" do
