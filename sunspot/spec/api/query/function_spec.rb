@@ -25,7 +25,7 @@ describe 'function query' do
         boost(function { Time.parse('2010-03-25 14:13:00 EDT') })
       end
     end
-    connection.should have_last_search_including(:bf, '2010-03-25T18:13:00Z')
+    connection.should have_last_search_boosted('2010-03-25T18:13:00Z', 'pizza')
   end
  
   it "should handle arbitrary functions in a function query block" do
@@ -34,7 +34,7 @@ describe 'function query' do
         boost(function { product(:average_rating, 10) })
       end
     end
-    connection.should have_last_search_including(:bf, 'product(average_rating_ft,10)')
+    connection.should have_last_search_boosted('product(average_rating_ft,10)', 'pizza')
   end
  
   it "should handle nested functions in a function query block" do
@@ -43,7 +43,7 @@ describe 'function query' do
         boost(function { product(:average_rating, sum(:average_rating, 20)) })
       end
     end
-    connection.should have_last_search_including(:bf, 'product(average_rating_ft,sum(average_rating_ft,20))')
+    connection.should have_last_search_boosted('product(average_rating_ft,sum(average_rating_ft,20))', 'pizza')
   end
 
   # TODO SOLR 1.5

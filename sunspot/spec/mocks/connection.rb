@@ -109,6 +109,10 @@ module Mock
       end
     end
 
+    def has_last_search_boosted?(boost,value)
+      has_last_search_including?(:q, "{!boost b=#{boost} v=#{value} defType=dismax}")
+    end
+
     private
 
     def with?(request, params)

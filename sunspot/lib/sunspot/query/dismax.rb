@@ -10,20 +10,24 @@ module Sunspot
       attr_writer :minimum_match, :phrase_slop, :query_phrase_slop, :tie
 
       def initialize(keywords)
-        @keywords = keywords
+        @keywords        = keywords
         @fulltext_fields = {}
-        @boost_queries = []
+        @boost_queries   = []
         @boost_functions = []
-        @highlights = []
+        @highlights      = []
       end
 
       #
       # The query as Solr parameters
       #
       def to_params
-        params = { :q => @keywords }
-        params[:fl] = '* score'
-        params[:qf] = @fulltext_fields.values.map { |field| field.to_boosted_field }.join(' ')
+        if @boost_functions.empty?
+          params = {:q => @keywords}
+        else
+          params = {:q => "{!boost b=#{@boost_functions.map { |boost_function| boost_function.to_s }} v=#{@keywords} defType=dismax}"}
+        end
+        params[:fl]      = '* score'
+        params[:qf]      = @fulltext_fields.values.map { |field| field.to_boosted_field }.join(' ')
         params[:defType] = 'dismax'
         if @phrase_fields
           params[:pf] = @phrase_fields.map { |field| field.to_boosted_field }.join(' ')
@@ -31,11 +35,6 @@ module Sunspot
         unless @boost_queries.empty?
           params[:bq] = @boost_queries.map do |boost_query|
             boost_query.to_boolean_phrase
-          end
-        end
-        unless @boost_functions.empty?
-          params[:bf] = @boost_functions.map do |boost_function|
-            boost_function.to_s
           end
         end
         if @minimum_match
@@ -64,7 +63,7 @@ module Sunspot
         params.delete :defType
         params.delete :fl
         keywords = params.delete(:q)
-        options = params.map { |key, value| "#{key}='#{escape_quotes(value)}'"}.join(' ')
+        options  = params.map { |key, value| "#{key}='#{escape_quotes(value)}'" }.join(' ')
         "_query_:\"{!dismax #{options}}#{escape_quotes(keywords)}\""
       end
 
